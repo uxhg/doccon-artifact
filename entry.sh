@@ -3,20 +3,9 @@ set -ux
 
 #BASE_PATH="$HOME/Projects/smart_apidoc_inconsis"
 BASE_PATH="/opt/doccon"
+SCRIPT_PATH=$BASE_PATH/scripts
 
-### extract code facts
-./openzeppelin.sh
-./erc721-extensions.sh
-./dapphublib.sh
-
-
-### extract doc facts
-echo "Clean facts generated last time" && \
-	rm -rf "$BASE_PATH/doc_facts" && \
-	cd smart_factbase && \
-	./batch-450 && \
-	./batch-erc721 && \
-	./batch-dapp && cd ..
+$SCRIPT_PATH/extract-facts.sh
 
 ### prepare facts for Datalog engine
 DOC_FACTS_ROOT="$BASE_PATH/exp/doc_facts"
@@ -45,6 +34,10 @@ done
 cp "$BASE_PATH/exp/resources/ERC721Exts.DefinedFunctions.facts" \
    "$CODE_FACTS_ROOT/erc721-extensions/v0.0.18/codefacts/HasFn.facts"
 
+## Override IsContract/1 for dapphub projects
+for x in "$BASE_PATH"/exp/resources/dapphub/*; do
+    cp "$x"/IsContract.facts "$CODE_FACTS_ROOT/dapphub/${x##*/}/codefacts/IsContract.facts"
+done
 ## Add ExcludeInterface/1 and ExcludeContract/1
 ## we do not need this anymore, because we override HasFn/2
 ## with a manually confirmed list of functions
@@ -55,9 +48,9 @@ ln -sf "$CODE_FACTS_ROOT/openzeppelin/v4.5.0/codefacts/IsContract.facts"\
 touch "$CODE_FACTS_ROOT/openzeppelin/v4.5.0/codefacts/ExcludeContract.facts"
 touch "$CODE_FACTS_ROOT/openzeppelin/v4.5.0/codefacts/ExcludeInterface.facts"
 
+
 # dapplibs=( "ds-auth" "ds-cache" "ds-chief" "ds-exec" "ds-guard" "ds-pause" "ds-proxy" "ds-roles" "ds-stop" "ds-test" "ds-thing" "ds-token" "ds-value" "ds-weth" )
 dapplibs=( "ds-stop" "ds-cache" "ds-chief" "ds-token" "ds-guard" "ds-roles" "ds-auth" "ds-math" )
-#dapplibs=( "ds-stop" "ds-cache" "ds-chief" "ds-token" "ds-guard" "ds-roles" "ds-auth" )
 for dapplib in "${dapplibs[@]}"; do
 	mkdir -p "$DL_IN_PATH/dapphub/$dapplib"
 	mkdir -p "$DL_OUT_PATH/dapphub/$dapplib"
@@ -77,7 +70,6 @@ RULE_PATH="$BASE_PATH/datalog/"
 SOUFFLE="souffle"
 cd "$RULE_PATH/userdef-functors" && ./compile-functor.sh \
 	&& export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:+$LD_LIBRARY_PATH:}`pwd`
-
 for nv in "${name_vers[@]}"; do
 	$SOUFFLE -F "$DL_IN_PATH/$nv" -D "$DL_OUT_PATH/$nv" \
 			"$RULE_PATH/err-detect/l1err.dl"
@@ -95,52 +87,24 @@ for nv in "${name_vers[@]}"; do
 	cd "$DL_OUT_PATH/$nv" && cat L3*.csv > all-L3.csv
 done
 
-#mkdir -p "$DL_IN_PATH/dapphub/combined/docfacts"
-#mkdir -p "$DL_IN_PATH/dapphub/combined/codefacts"
-#mkdir -p "$DL_OUT_PATH/dapphub/combined/"
-#for dapplib in "${dapplibs[@]}"; do
-#	for facts in "$DL_IN_PATH"/dapphub/"$dapplib"/codefacts/*; do
-#		cat "$facts" >> $DL_IN_PATH/dapphub/combined/codefacts/"${facts##*/}";
-#	done
-#
-#	for facts in "$DL_IN_PATH"/dapphub/"$dapplib"/docfacts/*; do
-#		cat "$facts" >> $DL_IN_PATH/dapphub/combined/docfacts/"${facts##*/}";
-#	done
-#done
-
-#$SOUFFLE -F "$DL_IN_PATH/dapphub/combined" \
-# 		-D "$DL_OUT_PATH/dapphub/combined" \
-# 		"$RULE_PATH/err-detect/l1err.dl"
-#
-#$SOUFFLE -F "$DL_IN_PATH/dapphub/combined" \
-# 		-D "$DL_OUT_PATH/dapphub/combined" \
-# 		"$RULE_PATH/err-detect/l2err.dl"
-#
-#$SOUFFLE -F "$DL_IN_PATH/dapphub/combined" \
-# 		-D "$DL_OUT_PATH/dapphub/combined" \
-# 		"$RULE_PATH/err-detect/l3err.dl"
-#
-#cd "$DL_OUT_PATH/dapphub/combined" && cat L1*.csv > all-L1.csv \
-#	&& cat L2*.csv > all-L2.csv && cat L3*.csv > all-L3.csv
-
 for dapplib in "${dapplibs[@]}"; do
- $SOUFFLE -F "$DL_IN_PATH/dapphub/$dapplib" \
- 		-D "$DL_OUT_PATH/dapphub/$dapplib" \
- 		"$RULE_PATH/err-detect/l1err.dl"
- echo "Concat $dapplib L1 results"
- cd "$DL_OUT_PATH/dapphub/$dapplib" && cat L1*.csv > all-L1.csv
+	$SOUFFLE -F "$DL_IN_PATH/dapphub/$dapplib" \
+			-D "$DL_OUT_PATH/dapphub/$dapplib" \
+			"$RULE_PATH/err-detect/l1err.dl"
+	echo "Concat $dapplib L1 results"
+	cd "$DL_OUT_PATH/dapphub/$dapplib" && cat L1*.csv > all-L1.csv
 
- $SOUFFLE -F "$DL_IN_PATH/dapphub/$dapplib" \
- 		-D "$DL_OUT_PATH/dapphub/$dapplib" \
- 		"$RULE_PATH/err-detect/l2err.dl"
- echo "Concat $dapplib L2 results"
- cd "$DL_OUT_PATH/dapphub/$dapplib" && cat L2*.csv > all-L2.csv
+	$SOUFFLE -F "$DL_IN_PATH/dapphub/$dapplib" \
+			-D "$DL_OUT_PATH/dapphub/$dapplib" \
+			"$RULE_PATH/err-detect/l2err.dl"
+	echo "Concat $dapplib L2 results"
+	cd "$DL_OUT_PATH/dapphub/$dapplib" && cat L2*.csv > all-L2.csv
 
- $SOUFFLE -F "$DL_IN_PATH/dapphub/$dapplib" \
- 		-D "$DL_OUT_PATH/dapphub/$dapplib" \
- 		"$RULE_PATH/err-detect/l3err.dl"
- echo "Concat $dapplib L3 results"
- cd "$DL_OUT_PATH/dapphub/$dapplib" && cat L3*.csv > all-L3.csv
+	$SOUFFLE -F "$DL_IN_PATH/dapphub/$dapplib" \
+			-D "$DL_OUT_PATH/dapphub/$dapplib" \
+			"$RULE_PATH/err-detect/l3err.dl"
+	echo "Concat $dapplib L3 results"
+	cd "$DL_OUT_PATH/dapphub/$dapplib" && cat L3*.csv > all-L3.csv
 done
 
 cd "$DL_OUT_PATH/dapphub"
@@ -153,8 +117,10 @@ set +x
 printf "alias ll='ls -alh'\nalias l='ll -ctr'" >> /root/.bashrc
 cd "$BASE_PATH"
 printf "##############################################################\n"
-printf "#                  Results Starts Here                       #\n"
+printf "#            Reproducing Evaluation Starts Here              #\n"
 printf "##############################################################\n"
+$SCRIPT_PATH/rq1.sh
+$SCRIPT_PATH/rq2.sh
+$SCRIPT_PATH/rq3.sh
 
-./show_reported.sh
 bash

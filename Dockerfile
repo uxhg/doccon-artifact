@@ -51,6 +51,7 @@ COPY datalog datalog
 
 ### copy scripts
 COPY exp exp
-COPY *.sh  ./ 
+COPY scripts scripts
+COPY entry.sh .
 
 CMD [ "bash", "./entry.sh" ]

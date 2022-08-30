@@ -1,10 +1,13 @@
-import json
 import collections
+import json
 import os
+
 from macros import DOC_FACTS_OUTPUT_DIR
+
 
 def isCommentLine(line):
     return True if line.strip().startswith('*') else False
+
 
 def findFQNInDoc(line):
     for word in line.strip().split():
@@ -22,10 +25,12 @@ def findFQNInDoc(line):
             return True
     return False
 
+
 def isSeeDoc(lines):
-    if lines[1].strip().startswith('* @dev See {'):
+    if lines[1].strip().startswith('* @dev See {'):  # T37
         return True
     return False
+
 
 def getLoadTarget(lines, current_contract_fqn) -> (str, str):
     """
@@ -43,7 +48,9 @@ def getLoadTarget(lines, current_contract_fqn) -> (str, str):
     load_func_name = lines[1].strip().split('{')[-1].split('}')[0].split('-')[-1]
     return load_contract_fqn, load_func_name
 
-def loadFacts(lib, version, load_contract_fqn, load_func_name, current_contract_fqn, current_func_name):
+
+def loadFacts(lib, version, load_contract_fqn, load_func_name, current_contract_fqn,
+              current_func_name):
     func_facts = []
     contract_facts_file = DOC_FACTS_OUTPUT_DIR + '/' + lib + '/' + version + '/' + load_contract_fqn + '.json'
     if not os.path.isfile(contract_facts_file):
@@ -51,6 +58,8 @@ def loadFacts(lib, version, load_contract_fqn, load_func_name, current_contract_
     with open(contract_facts_file, 'r') as fr:
         contract_facts = json.load(fr, object_pairs_hook=collections.OrderedDict)
     for f in contract_facts:
-        if f.split(',')[0] == 'FUNCTION' and f.split(',')[1] == load_contract_fqn + '.' + load_func_name:
-            func_facts.append(f.replace(load_contract_fqn + '.' + load_func_name, current_contract_fqn + '.' + current_func_name))
+        if f.split(',')[0] == 'FUNCTION' and f.split(',')[
+            1] == load_contract_fqn + '.' + load_func_name:
+            func_facts.append(f.replace(load_contract_fqn + '.' + load_func_name,
+                                        current_contract_fqn + '.' + current_func_name))
     return func_facts

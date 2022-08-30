@@ -37,11 +37,11 @@ def extractDocFactsFromOneFunc_DappHub(lib, version, lines, contract_fqn, func_n
                 dl_require_set.add(dl_require)
             if dl_fn_mod:
                 dl_fn_mod_set.add(dl_fn_mod)
-        if 'Fires a ' in lines[i] and 'event' in lines[i]:
+        if 'Fires a ' in lines[i] and 'event' in lines[i]:  # T5
             emit_fact, dl_emit = extractEmitFacts(lib, version, lines[i], contract_fqn, func_name)
             func_facts += emit_fact
             dl_emit_set.add(dl_emit)
-        if 'Overridden from ' in lines[i]:
+        if 'Overridden from ' in lines[i]:  # T34
             override_fact, dl_override = extractOverrideFacts(lib, version, lines[i], contract_fqn, func_name)
             func_facts += override_fact
             dl_override_set.add(dl_override)
@@ -61,10 +61,10 @@ def extractRequireFacts(lib, version, sentence, contract_fqn, func_name) \
     right = right.rstrip('\n')
     dl_fn_has_mod = None
     dl_require = None
-    if right == 'auth':
+    if right == 'auth':  # T33
         fact = 'FUNCTION,' + contract_fqn + '.' + func_name + ',HASMODIFER,' + right
         dl_fn_has_mod: Optional[FnModFact] = FnModFact(contract_fqn, func_name, right)
-    else:
+    else:  # T18
         fact = 'FUNCTION,' + contract_fqn + '.' + func_name + ',REQUIRE,' + right
         dl_require: Optional[RequireFact] = RequireFact(contract_fqn, func_name, Expr(right))
     if fact not in sentence_facts:

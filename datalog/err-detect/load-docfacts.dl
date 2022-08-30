@@ -5,21 +5,21 @@ Load doc facts
 #include "../def.dl"
 
 /* Inherit and Override */
-//.decl D_Inherit(ca: Ct, cb: Ct) /* Contract ca inherits contract cb */ 
-//.input D_Inherit(IO=file, filename="docfacts/Inherit.facts")
+.decl D_Inherit(ca: Ct, cb: Ct) /* Contract ca inherits contract cb */
+.input D_Inherit(IO=file, filename="docfacts/Inherit.facts")
 
 .decl D_Override(ca: Ct, fa: Fn, cb: Ct, fb: Fn) /* Function fa overrides function fb */
 .input D_Override(IO=file, filename="docfacts/Override.facts")
 
 /* Contract related */
-//.decl D_HasStateVar(c: Ct, v: SVar)  /* Contract c has a state variable v */
-//.input D_HasStateVar(IO=file, filename="docfacts/HasStateVar.facts")
+.decl D_HasStateVar(c: Ct, v: SVar)  /* Contract c has a state variable v */
+.input D_HasStateVar(IO=file, filename="docfacts/HasStateVar.facts")
 
 .decl D_HasFn(c:Ct, f: Fn)  /* Contract c has a function f */
 .input D_HasFn(IO=file, filename="docfacts/HasFn.facts")
 
-//.decl D_CtHasMod(c:Ct, m: Mod) /* Contract c has a modifer m */
-//.input D_CtHasMod(IO=file, filename="docfacts/CtHasMod.facts")
+.decl D_CtHasMod(c:Ct, m: Mod) /* Contract c has a modifer m */
+.input D_CtHasMod(IO=file, filename="docfacts/CtHasMod.facts")
 
 /* Function related */
 .decl D_HasParam(c: Ct, f: Fn, p: Param) /* Function f has a parameter p */
@@ -30,8 +30,9 @@ Load doc facts
 
 
 /* Relations between entities */
-//.decl D_Call(ca: Ct, fa: Fn, cb: Ct, fb: Fn) 
-//.input D_Call(IO=file, filename="docfacts/Call.facts")
+
+.decl D_Call(ca: Ct, fa: Fn, vl: ExprList, cb: Ct, fb: Fn, pl: VarList)
+.input D_Call(IO=file, filename="docfacts/Call.facts")
 
 .decl D_Require(c: Ct, f: Fn, e: Expr) 
 .input D_Require(IO=file, filename="docfacts/Require.facts")

@@ -1,11 +1,11 @@
-/** Copyright 2022 wuxhme (at) gmail.com 
-Load code facts 
+/** Copyright 2022 wuxhme (at) gmail.com
+Load code facts
  */
 #pragma once
 #include "../def.dl"
 
 /* Inherit and Override */
-.decl C_Inherit(ca: Ct, cb: Ct) /* Contract ca inherits contract cb */ 
+.decl C_Inherit(ca: Ct, cb: Ct) /* Contract ca inherits contract cb */
 .input C_Inherit(IO=file, filename="codefacts/Inherit.facts")
 
 .decl C_Override(ca: Ct, fa: Fn, cb: Ct, fb: Fn) /* Function fa overrides function fb */
@@ -21,11 +21,15 @@ Load code facts
 .decl C_CtHasMod(c:Ct, m: Mod) /* Contract c has a modifer m */
 .input C_CtHasMod(IO=file, filename="codefacts/CtHasMod.facts")
 
-.decl C_IsContract(c: Ct) 
+.decl C_IsContract(c: Ct)
 .input C_IsContract(IO=file, filename="codefacts/IsContract.facts")
 
 .decl C_IsInterface(c: Ct) /* Contract c is an interface */
 .input C_IsInterface(IO=file, filename="codefacts/IsInterface.facts")
+
+.decl C_IsContractOrInterface(c: Ct)
+C_IsContractOrInterface(c) :- C_IsContract(c).
+C_IsContractOrInterface(c) :- C_IsInterface(c).
 
 /* Function related */
 .decl C_HasParam(c:Ct, f: Fn, p: Param) /* Function f has a parameter p */
@@ -36,20 +40,20 @@ Load code facts
 
 
 /* Relations between entities */
-.decl C_Call(ca: Ct, fa: Fn, vl: ExprList, cb: Ct, fb: Fn, pl: VarList) 
+.decl C_Call(ca: Ct, fa: Fn, vl: ExprList, cb: Ct, fb: Fn, pl: VarList)
 .input C_Call(IO=file, filename="codefacts/Call.facts")
 
-.decl C_Require(c: Ct, f: Fn, e: Expr) 
+.decl C_Require(c: Ct, f: Fn, e: Expr)
 .input C_Require(IO=file, filename="codefacts/Require.facts")
 
 .decl C_Revert(c: Ct, f: Fn, x: Expr)
 .input C_Revert(IO=file, filename="codefacts/Revert.facts")
 
-.decl C_Emit(c: Ct, f: Fn, ev: Event, e: Expr) 
+.decl C_Emit(c: Ct, f: Fn, ev: Event, e: Expr)
 .input C_Emit(IO=file, filename="codefacts/Emit.facts")
 
 
-.decl C_ExcludeContract(c: Ct) 
+.decl C_ExcludeContract(c: Ct)
 .input C_ExcludeContract(IO=file, filename="codefacts/ExcludeContract.facts")
 
 .decl C_ExcludeInterface(c: Ct)

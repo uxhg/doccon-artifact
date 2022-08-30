@@ -1,4 +1,4 @@
-
+#!/usr/bin/env bash
 # # install nix environment that dapp tools depend.
 # # this is a interactive process
 # sh <(curl -L https://nixos.org/nix/install) --daemon

@@ -3,7 +3,7 @@ from typing import Set, List, Optional
 from contain import extractHASFUNCTIONFacts
 from contain import getAllContractsAndFunctionsAndParams
 from datalog.pred import HasFnFact, HasParamFact, OverrideFact, FnModFact, RequireFact, EmitFact, \
-    RevertFact
+    RevertFact, InheritFact
 from openzeppelin import extractRequireFacts, extractEmitFacts, extractRevertFacts
 from util import findFQNInDoc
 
@@ -13,13 +13,9 @@ def extractDocFactsFromOneFunc_ERC721(lib, version, lines, contract_fqn, func_na
             Set[RevertFact], Set[HasParamFact], Set[OverrideFact]):
     # extract facts
     func_facts = []
-    dl_fn_mod_set = set()
-    dl_require_set = set()
-    dl_emit_set = set()
-    dl_revert_set = set()
-    dl_has_param_set = set()
     # solidity
     func_facts, fn_mod_facts = extractModifierFacts(lines, func_facts, contract_fqn, func_name)
+    func_facts, inherit_facts = extractInheritFacts(lines, func_facts, contract_fqn)
     func_facts, require_facts = extractRequireFacts(lines, func_facts, contract_fqn, func_name)
     func_facts, emit_facts, = extractEmitFacts(lines, func_facts, contract_fqn, func_name)
     func_facts, revert_facts = extractRevertFacts(lines, func_facts, contract_fqn, func_name)
@@ -29,11 +25,11 @@ def extractDocFactsFromOneFunc_ERC721(lib, version, lines, contract_fqn, func_na
                                                                               func_name)
     func_facts = [fact.replace(',PLACEHOLDER,', ',' + contract_fqn + '.' + func_name + ',')
                   for fact in func_facts]
+    func_facts = [fact.replace(',CONT_PLACEHOLDER,', ',' + contract_fqn + ',') for fact in func_facts]
     for fact in func_facts:
         if fact not in doc_facts:
             doc_facts.append(fact)
-    return doc_facts, fn_mod_facts, require_facts, emit_facts, \
-           revert_facts, has_param_facts, override_facts
+    return doc_facts, fn_mod_facts, require_facts, emit_facts, revert_facts, has_param_facts, override_facts, inherit_facts
 
 
 def extractContractContainFacts_ERC721(lib, version, src_file, doc_facts: List[str]) -> (
@@ -65,6 +61,19 @@ def extractModifierFacts(lines, func_facts, ct, fn) -> (List[str], Set[FnModFact
     return func_facts, dl_fn_has_mod_set
 
 
+def extractInheritFacts(lines, func_facts, contract_fqn) -> (List[str], Set[InheritFact]):
+    dl_inherit_set: Set[InheritFact] = set()
+    for i in range(len(lines)):
+        if lines[i].strip().startswith('/// Implement the ') and ' Contract' in lines[i]:  # T35
+            parent_contract = lines[i].strip().split(' Implement the ')[-1].split(' Contract')[
+                0].replace('`', '').strip()
+            fact = 'CONTRACT,CONT_PLACEHOLDER,IS,' + parent_contract
+            dl_inherit_set.add(InheritFact(parent_contract, contract_fqn))
+            if fact not in func_facts:
+                func_facts.append(fact)
+    return func_facts, dl_inherit_set
+
+
 def extractFunctionContainFacts(lib, version, lines, func_facts, contract_fqn, fn_name) \
         -> (List[str], Set[HasParamFact], Set[OverrideFact]):
     dl_has_param_set: Set[HasParamFact] = set()
@@ -90,7 +99,7 @@ def extractUSEMODIFIERFacts(sentence, ct, fn) -> (List[str], Optional[FnModFact]
     sentence_facts = []
     if 'Only allow ' in sentence:
         modifier_name = sentence.strip().split(' if ')[-1]
-        if 'if within the allowed' in sentence:
+        if 'if within the allowed' in sentence:  # T26
             modifier_name = 'within' + ''.join(sentence.strip().split(' the allowed ')[-1].split())
     fact = 'FUNCTION,PLACEHOLDER,USEMODIFIER,' + modifier_name
     sentence_facts.append(fact)
@@ -106,10 +115,9 @@ def extractHASPARAMFacts(lib, version, sentence, contract_fqn, fn_name) \
         A tuple, .0 is a list of str, facts in original format;
         .1 is a HasParamFact or None
     """
-    dl_has_param: Set[HasParamFact] = set()
     _, all_functions, all_params = getAllContractsAndFunctionsAndParams(lib, version)
     sentence_facts = []
-    kw = sentence.split('/// @param ')[-1].strip().split()[0]
+    kw = sentence.split('/// @param ')[-1].strip().split()[0]  # T29
     if kw not in all_params:
         return sentence_facts, None
     fact = 'FUNCTION,PLACEHOLDER,HASPARAM,' + kw
