@@ -1,5 +1,5 @@
-/** Copyright 2022 wuxhme (at) gmail.com 
- * Detection of L3 errors: in code, not in doc, 
+/** Copyright 2022 wuxhme (at) gmail.com
+ * Detection of L3 errors: in code, not in doc,
  *   internal: those except event/revert/require
  */
 
@@ -10,39 +10,39 @@
 #include "../transitive-rules/doc.dl"
 
 /* Inherit and Override */
-.decl L3Inherit(ca: Ct, cb: Ct) /* Contract ca inherits contract cb */ 
-L3Inherit(ca, cb) :- C_Inherit(ca, cb). //, !D_Inherit(ca, cb).
+.decl L3Inherit(ca: Ct, cb: Ct) /* Contract ca inherits contract cb */
+L3Inherit(ca, cb) :- C_IsContractOrInterface(ca), C_IsContractOrInterface(cb), C_Inherit(ca, cb), !D_Inherit(ca, cb).
 
 .decl L3Override(ca: Ct, fa: Fn,  cb: Ct, fb: Fn) /* Function cb.fb overrides function ca.fa */
-L3Override(ca, fa, cb, fb) :- C_Override(ca, fa, cb, fb), !D_Override(ca, fa, cb, fb), 
+L3Override(ca, fa, cb, fb) :- C_IsContractOrInterface(ca), C_IsContractOrInterface(cb),
+    C_Override(ca, fa, cb, fb), !D_Override(ca, fa, cb, fb),
     C_HasFn(ca, fa), C_HasFn(cb, fb), !C_Exclude(ca), !C_Exclude(cb),
     !match(".*Mocks?", cb), !match(".*Example$", cb), !match(".*Test$", cb).
- 
+
 /* Contract related */
 .decl L3HasStateVar(c: Ct, v: SVar) /* Contract c has a state variable v */
-L3HasStateVar(c, v) :- C_HasStateVar(c, v).//, !D_HasStateVar(c, v).
+L3HasStateVar(c, v) :- C_IsContractOrInterface(c), C_HasStateVar(c, v), !D_HasStateVar(c, v).
 
 .decl L3HasFn(c:Ct, f: Fn)  /* Contract c has a function f */
-L3HasFn(c, f) :- C_HasFn(c, f), !D_HasFn(c, f), !C_Exclude(c), !C_NotExistFunc(c, f),
+L3HasFn(c, f) :- C_IsContractOrInterface(c), C_HasFn(c, f), !D_HasFn(c, f), !C_Exclude(c), !C_NotExistFunc(c, f),
     !match(".*Mocks?", c), !match(".*Example$", c), !match(".*Test$", c).
 
 .decl L3CtHasMod(c:Ct, m: Mod) /* Contract c has a modifer m */
-L3CtHasMod(c, m) :- C_CtHasMod(c, m). //, !D_CtHasMod(c, m).
+L3CtHasMod(c, m) :- C_IsContractOrInterface(c), C_CtHasMod(c, m). //, !D_CtHasMod(c, m).
 
 /* Function related */
 .decl L3HasParam(c: Ct, f: Fn, p: Param) /* Function f has a parameter p */
-L3HasParam(c, f, p) :- C_HasParam(c, f, p), !D_HasParam(c, f, p), 
+L3HasParam(c, f, p) :- C_IsContractOrInterface(c), C_HasParam(c, f, p), !D_HasParam(c, f, p),
     !C_Exclude(c), C_HasFn(c, f), !C_NotExistFunc(c, f),
     !match(".*Mocks?", c), !match(".*Example$", c), !match(".*Test$", c).
 
 .decl L3FnHasMod(c: Ct, f: Fn, m: Mod) /* Function c.f uses a modifier m */
-L3FnHasMod(c, f, m) :- C_FnHasMod(c, f, m), !D_FnHasMod(c, f, m), 
+L3FnHasMod(c, f, m) :- C_IsContractOrInterface(c), C_FnHasMod(c, f, m), !D_FnHasMod(c, f, m),
     C_HasFn(c, f), !C_Exclude(c), !C_NotExistFunc(c, f),
     !match(".*Mocks?", c), !match(".*Example$", c), !match(".*Test$", c).
 
-/* .decl L3Call(fa: Fn, vl: ExprList, fb: Fn, pl: VarList)  */
-//.decl L3Call(fa: Fn, fb: Fn) 
-//L3Call(fa, fb) :- C_Call(fa, _, fb, _), !D_Call(fa, fb).
+.decl L3Call(ca: Ct, fa: Fn, cb: Ct, fb: Fn)
+L3Call(ca, fa, cb, fb) :- C_Call(ca, fa, _, cb, fb, _), !D_Call(ca, fa, _, cb, fb, _).
 
 .output L3Inherit
 .output L3Override

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-#shopt -s expand_aliases
-#alias grep='grep --color'
+set -ueET
+shopt -s expand_aliases
+alias grep='grep --color'
 
 BASE_PATH="/opt/doccon"
 RESULT_PATH="$BASE_PATH/exp/dl/out"
@@ -8,7 +9,16 @@ RESULT_PATH="$BASE_PATH/exp/dl/out"
 OZ450="openzeppelin/v4.5.0"
 ERC0018="erc721-extensions/v0.0.18"
 
-echo "All Reported Cases"
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+failure() {
+        local lineno=$1
+        local msg=$2
+        printf "${RED}Failed at $lineno ${NC}: $msg\n"
+}
+trap 'failure ${LINENO} "$BASH_COMMAND"' ERR
+
+echo "All Reported Cases (RQ2 in the paper)"
 echo "==================================================================================";
 echo "Reported issue 1: https://github.com/OpenZeppelin/openzeppelin-contracts/issues/3359";
 echo "Contain 2 inconsistencies    Confirmed Fixed"
@@ -122,7 +132,7 @@ grep -PH 'HasSecondarySalesFees\tgetFeeBps\tWithFees\tgetFeeBps'               "
 
 echo "----------------------------------------------------------------------------------";
 echo "Reported issue 15: https://github.com/1001-digital/erc721-extensions/issues/13";
-echo "Contain 5 inconsistencies    NotConfirmed NotFixed"
+echo "Contain 5 inconsistencies    Confirmed Fixed"
 grep -PH 'WithMarketOffers\t_cancelOffer\tOfferWithdrawn\t\$Bool\(True\)'         "$RESULT_PATH/$ERC0018/L2Emit.csv"
 grep -PH 'WithMarketOffers\t_beforeTokenTransfer\tOfferWithdrawn\t\$Bool\(True\)' "$RESULT_PATH/$ERC0018/L2Emit.csv"
 grep -PH 'WithMarketOffers\tcancelOffer\tOfferWithdrawn\t\$Bool\(True\)'          "$RESULT_PATH/$ERC0018/L2Emit.csv"
@@ -155,4 +165,4 @@ grep -PH 'DSToken\ttransfer\tTransfer\t\$Bool\(True\)' "$RESULT_PATH/dapphub/ds-
 
 ## conclusion
 echo "==================================================================================";
-echo "In total: 40 reported inconsistencies, 25 level-1, 15 level-2, 24 confirmed, 17 fixed."
+echo "In total: 40 reported inconsistencies, 25 level-1, 15 level-2, 29 confirmed, 22 fixed."

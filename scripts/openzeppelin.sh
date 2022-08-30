@@ -1,7 +1,4 @@
-
-
-
-
+#!/usr/bin/env bash
 pip3 uninstall -y slither-analyzer crytic-compile
 pip3 install slither-analyzer==0.8.3 crytic-compile==0.2.3
 

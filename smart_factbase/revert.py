@@ -7,7 +7,7 @@ from datalog.pred import RevertFact
 
 def extractREVERTIFFacts(sentence, ct, fn) -> (List[str], RevertFact):
     sentence_facts = []
-    message_func_name = sentence.split('Reverts with ')[-1].split(' if')[0]  # template T7
+    message_func_name = sentence.split('Reverts with ')[-1].split(' if')[0]
     message_func_name = message_func_name.replace('`', '')
     condition_sentence = sentence.split(' if ')[-1].strip().strip(',').strip('.')
     condition = parseConditionSentence(condition_sentence)

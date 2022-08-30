@@ -1,6 +1,7 @@
-from datalog.newtypes import FunctionName
 from enum import Enum, auto
 from typing import List
+
+from datalog.newtypes import FunctionName, SouffleListItem
 
 
 class Expr:
@@ -11,9 +12,28 @@ class Expr:
         return f"$Literal(\"{self.content}\")"
 
 
+class SouffleList:
+    def __init__(self, items: List[SouffleListItem]):
+        self.items: List[SouffleListItem] = items
+
+    def __str__(self) -> str:
+        """
+        Convert a list to its Souffle textual representation
+        """
+        if len(self.items) == 0:
+            return "nil"
+        str_repr = ""
+        for i in self.items:
+            i_as_str: str = str(i).replace("[", "__L_bracket").replace("]", "__R_bracket")
+            str_repr += f"[{i_as_str}, "
+        str_repr += "nil"
+        str_repr += len(self.items) * "]"
+        return str_repr
+
+
 class FnApply(Expr):
     func: FunctionName
-    args: List[Expr]
+    args: SouffleList
 
 
 class UnaryOp(Enum):
