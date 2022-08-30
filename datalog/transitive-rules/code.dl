@@ -70,9 +70,14 @@ C_Require(cx, fx, e) :- C_Require(cy, fy, e), C_Call(cx, fx, _, cy, fy, _).
 
 C_Inherit(a, c) :- C_Inherit(a, b), C_Inherit(b, c).
 C_Override(ca, fa, cc, fc) :- C_Override(ca, fa, cb, fb), C_Override(cb, fb, cc, fc).
+/// This propogation can prevent errornous C_NotExistFunc entries under the circumstances of multi-inheritance
+/// if (1) c inherit a, b; (2) b inherit a; (3) c.f override a.f ; then => c.f also override b.f
+/// This rule could be problematic so we do not use it for now. Need more investigation.
+// C_Override(b, f, c, f) :- C_Inherit(a, b), C_Inherit(a, c), C_Inherit(b, c), C_Override(a, f, c, f).
 
 .decl C_NotExistFunc(c: Ct, f: Fn)
 // e.g., HasFn(GovernorTimelockControl, _updateTimelock), HasFn(MyGovernor1, _updateTimelock)
 // Inherit(GovernorTimelockControl, MyGovernor1), 
 // and !Override(GovernorTimelockControl, _updateTimelock, MyGovernor1, _updateTimelock)
 C_NotExistFunc(c, f) :- C_HasFn(c, f), C_HasFn(csuper, f), C_Inherit(csuper, c), !C_Override(csuper, f, c, f).
+
