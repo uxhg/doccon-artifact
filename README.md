@@ -1,16 +1,14 @@
 # DocCon: Solidity API documentation error checker
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7034737.svg)](https://doi.org/10.5281/zenodo.7034737)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7034128.svg)](https://doi.org/10.5281/zenodo.7034128)
 
-
-
-The latest version of this repo can be found at: https://github.com/uxhg/doccon-artifact
+The latest version of this repo can be found at: https://github.com/Chenguang-Zhu/DocCon
 
 DocCon is a tool for detecting inconsistencies between documentations and the corresponding code for
 Solidity smart contract libraries.
 
 This repo provides a docker to replicate evaluation done in the
-[ASE 2022 paper](https://wuxh.info/static/pub/doccon.pdf).
+[ASE 2022 paper](https://personal.ntu.edu.sg/yi_li/files/Zhu2022ISS.pdf).
 
 
 ## Prerequisites
@@ -21,8 +19,8 @@ This repo provides a docker to replicate evaluation done in the
 ## Installation
 Clone this repo and build Docker image:
 ```sh
-git clone https://github.com/Chenguang-Zhu/DocCon_Artifact.git
-cd DocCon_Artifact
+git clone https://github.com/Chenguang-Zhu/DocCon.git
+cd DocCon
 sudo docker build -t doccon .
 ```
 Time estimation: 20–30 minutes (on modern hardware with good network condition)
@@ -359,3 +357,16 @@ code.
 
 You can find out how to interpret other CSV files by checking Datalog files in
 `datalog/err-detect/` and related descriptions in the paper.
+
+---
+
+If you would like to use DocCon in your research, please cite our ASE'22 paper.
+
+```latex
+@inproceedings{ZhuETAL2022DocCon,
+  author = {Zhu, Chenguang and Liu, Ye and Wu, Xiuheng and Li, Yi},
+  booktitle = {Proceedings of the 37th IEEE/ACM International Conference on Automated Software Engineering},
+  title = {Identifying Solidity Smart Contract API Documentation Errors},
+  year = {2022}
+}
+```
